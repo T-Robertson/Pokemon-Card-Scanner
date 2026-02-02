@@ -3,18 +3,14 @@ import numpy as np
 import math
 from PIL import Image
 import imagehash
-import cardData
-
 
 # Get the width of the cards/images
 def getWidthCard():
-    return 330
-
+    return 340
 
 # Get the height of the cards/images
 def getHeightCard():
-    return 440
-
+    return 450
 
 # Returns the corners & area of the biggest contour
 def biggestContour(contours):
@@ -119,10 +115,9 @@ def swap(arr, ind1, ind2):
     arr[ind1] = arr[ind2]
     arr[ind2] = temp
 
-
-# Compares the average hash of the current frame with the average has of every card in evolutions
+# Compares the average hash of the current frame with the average has of every card
 # Returns True if a matching card is found and False if not
-def findCard(imgWarpColor):
+def findCard(imgWarpColor, wantedcards):
     # Converts image format from OpenCV format to PIL format
     # Converts from Blue Green Red to Red Green Blue image format
     convertedImgWarpColor = cv2.cvtColor(imgWarpColor, cv2.COLOR_BGR2RGB)
@@ -135,24 +130,52 @@ def findCard(imgWarpColor):
     hashes[2] = imagehash.phash(scannedCard)
     hashes[3] = imagehash.dhash(scannedCard)
 
-    # Compares this hash to a database of hash values for all cards in the Evolutions set
-    cardinfo = cardData.compareCards(hashes)
+    # Compares this hash to a folder of hash values
+    cutoff = 18 # Arbitrarily set cutoff value; was found through testing
+   # Create arrays of size=4 that store hash differences for each orientation; every hashing method gets its own array
+    avghashesDists = np.zeros(4)
+    whashesDists = np.zeros(4)
+    phashesDists = np.zeros(4)
+    dhashesDists = np.zeros(4)
+    
+    maxHashDists = []  # An array that will store the maximum of the minimum hash difference for each card
+    
+    for x in wantedcards :  # Loop through recorded hashes
+        #print(x)  # For testing: print the card number being compared
 
-    # If a matching card was found, print its information and return True and an image of the card
-    if cardinfo is not None:
-        getFoundCardData(cardinfo)  # Displays an image containing card info
-        return True, getMatchingCard(cardinfo['Card Number'])
+        # find the distance from the scanned image
+        avghashesDists[0] = hashes[0] - imagehash.hex_to_hash(wantedcards[x]['hash'][0][0])
+        avghashesDists[1] = hashes[0] - imagehash.hex_to_hash(wantedcards[x]['mir'][0][0])
+        avghashesDists[2] = hashes[0] - imagehash.hex_to_hash(wantedcards[x]['hud'][0][0])
+        avghashesDists[3] = hashes[0] - imagehash.hex_to_hash(wantedcards[x]['hubmir'][0][0])
+        
+        whashesDists[0] = hashes[1] - imagehash.hex_to_hash(wantedcards[x]['hash'][0][1])
+        whashesDists[1] = hashes[1] - imagehash.hex_to_hash(wantedcards[x]['mir'][0][1])
+        whashesDists[2] = hashes[1] - imagehash.hex_to_hash(wantedcards[x]['hud'][0][1])
+        whashesDists[3] = hashes[1] - imagehash.hex_to_hash(wantedcards[x]['hubmir'][0][1])
+        
+        phashesDists[0] = hashes[2] - imagehash.hex_to_hash(wantedcards[x]['hash'][0][2])
+        phashesDists[1] = hashes[2] - imagehash.hex_to_hash(wantedcards[x]['mir'][0][2])
+        phashesDists[2] = hashes[2] - imagehash.hex_to_hash(wantedcards[x]['hud'][0][2])
+        phashesDists[3] = hashes[2] - imagehash.hex_to_hash(wantedcards[x]['hubmir'][0][2])
+        
+        dhashesDists[0] = hashes[3] - imagehash.hex_to_hash(wantedcards[x]['hash'][0][3])
+        dhashesDists[1] = hashes[3] - imagehash.hex_to_hash(wantedcards[x]['mir'][0][3])
+        dhashesDists[2] = hashes[3] - imagehash.hex_to_hash(wantedcards[x]['hud'][0][3])
+        dhashesDists[3] = hashes[3] - imagehash.hex_to_hash(wantedcards[x]['hubmir'][0][3])
 
-    # If no matching card was found, return False & black image
-    return False, np.zeros((getHeightCard(), getWidthCard(), 3), np.uint8)
-
-
-# Returns the matching card image given the card number
-def getMatchingCard(cardNum):
-    filename = 'evolutionsCardsImages/' + str(cardNum).rjust(3, '0') + '.png'
-    foundCard = cv2.imread(filename)
-    return cv2.resize(foundCard, (getWidthCard(), getHeightCard()))
-
+        # Find the minimum of each hashing method
+        # This should make us look at the correct card orientation
+        hashDistances = [min(avghashesDists), min(whashesDists), min(phashesDists), min(dhashesDists)]
+        maxHashDists.append(max(hashDistances))  # Find of the max of each hashing method to reduce error
+    
+    #print(min(maxHashDists), cutoff)  # For testing: print the minimum hash distance found & the cutoff value
+    if min(maxHashDists) < cutoff:  # If the smallest hash distance is less than the cutoff, we have found our card
+        minCardNum = maxHashDists.index(min(maxHashDists)) + 1  # Find the card number of the card
+        return minCardNum  # Return True & the matching card info
+    else:
+        # If no matching card was found, return none
+        return None
 
 # Draws a rectangle given a cv2 image and 4 corners
 def drawRectangle(img, corners):
@@ -196,67 +219,3 @@ def makeDisplayImage(imgArr, labels):
                         (0, 0, 0), 2)
 
     return stacked
-
-
-# Uses information on the founding card to display a window with information on the card
-def getFoundCardData(cardinfo):
-    infoImg = np.full((320, getWidthCard() + 150, 3), 255, np.uint8)
-
-    # Card info
-    cv2.putText(infoImg, "Card info:",
-                (5, 40), cv2.FONT_HERSHEY_DUPLEX, 1.2, (0, 0, 0), 2)
-    cv2.putText(infoImg, "__________________________________________________",
-                (0, 50), cv2.FONT_HERSHEY_DUPLEX, 0.6, (0, 0, 0), 1)
-
-    cv2.putText(infoImg, "Card Name:",
-                (5, 80), cv2.FONT_HERSHEY_DUPLEX, 0.6, (0, 0, 0), 1)
-    cv2.putText(infoImg, f"{cardinfo['Card Name']}",
-                (225, 80), cv2.FONT_HERSHEY_DUPLEX, 0.6, (0, 0, 0), 1)
-
-    cv2.putText(infoImg, "Card Number:",
-                (5, 100), cv2.FONT_HERSHEY_DUPLEX, 0.6, (0, 0, 0), 1)
-    cv2.putText(infoImg, f"{cardinfo['Card Number']}",
-                (225, 100), cv2.FONT_HERSHEY_DUPLEX, 0.6, (0, 0, 0), 1)
-
-    cv2.putText(infoImg, "Card Rarity:",
-                (5, 120), cv2.FONT_HERSHEY_DUPLEX, 0.6, (0, 0, 0), 1)
-    cv2.putText(infoImg, f"{cardinfo['Rarity']}",
-                (225, 120), cv2.FONT_HERSHEY_DUPLEX, 0.6, (0, 0, 0), 1)
-
-    cv2.putText(infoImg, "Card Type:",
-                (5, 140), cv2.FONT_HERSHEY_DUPLEX, 0.6, (0, 0, 0), 1)
-    cv2.putText(infoImg, f"{cardinfo['Card Type']}",
-                (225, 140), cv2.FONT_HERSHEY_DUPLEX, 0.6, (0, 0, 0), 1)
-
-    # Pokemon info
-    cv2.putText(infoImg, "Pokemon info:",
-                (5, 180), cv2.FONT_HERSHEY_DUPLEX, 1.2, (0, 0, 0), 2)
-    cv2.putText(infoImg, "__________________________________________________",
-                (0, 190), cv2.FONT_HERSHEY_DUPLEX, 0.6, (0, 0, 0), 1)
-
-    cv2.putText(infoImg, "Pokemon:",
-                (5, 220), cv2.FONT_HERSHEY_DUPLEX, 0.6, (0, 0, 0), 1)
-    cv2.putText(infoImg, f"{cardinfo['Pokemon']}",
-                (225, 220), cv2.FONT_HERSHEY_DUPLEX, 0.6, (0, 0, 0), 1)
-
-    cv2.putText(infoImg, "Pokedex Number:",
-                (5, 240), cv2.FONT_HERSHEY_DUPLEX, 0.6, (0, 0, 0), 1)
-    cv2.putText(infoImg, f"{cardinfo['Pokedex Number']}",
-                (225, 240), cv2.FONT_HERSHEY_DUPLEX, 0.6, (0, 0, 0), 1)
-
-    cv2.putText(infoImg, "Pokemon Card Type:",
-                (5, 260), cv2.FONT_HERSHEY_DUPLEX, 0.6, (0, 0, 0), 1)
-    cv2.putText(infoImg, f"{cardinfo['Pokemon Type']}",
-                (225, 260), cv2.FONT_HERSHEY_DUPLEX, 0.6, (0, 0, 0), 1)
-
-    cv2.putText(infoImg, "Pokemon Stage:",
-                (5, 280), cv2.FONT_HERSHEY_DUPLEX, 0.6, (0, 0, 0), 1)
-    cv2.putText(infoImg, f"{cardinfo['Pokemon Stage']}",
-                (225, 280), cv2.FONT_HERSHEY_DUPLEX, 0.6, (0, 0, 0), 1)
-
-    cv2.putText(infoImg, "Pokemon Height (m):",
-                (5, 300), cv2.FONT_HERSHEY_DUPLEX, 0.6, (0, 0, 0), 1)
-    cv2.putText(infoImg, f"{cardinfo['Pokemon Height']}",
-                (225, 300), cv2.FONT_HERSHEY_DUPLEX, 0.6, (0, 0, 0), 1)
-
-    cv2.imshow('Card Info', infoImg)
