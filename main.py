@@ -4,6 +4,7 @@ import utils
 import CardSet
 from PIL import Image, ImageOps
 import time
+import playsound
 
 class PokemonCardScanner:
     def __init__(self):
@@ -12,6 +13,7 @@ class PokemonCardScanner:
         
         # Cards collected
         self.collectedCards = {}
+        self.totalCardsCollected = 0
         
         #start main function
         self.main()
@@ -19,6 +21,7 @@ class PokemonCardScanner:
     def main(self):
         self.generateCardSetHashes() 
         print("Card set hashes generated.")
+        #print(self.cardsearchhashs)  # For testing: print the generated card set hashes
         print("Starting card reader...")
         self.readCard()
         
@@ -29,6 +32,7 @@ class PokemonCardScanner:
         # Scaled to the IRL height and width of a Pokemon card (6.6 cm x 8.8 cm)
         widthCard = utils.getWidthCard()
         heightCard = utils.getHeightCard()
+        lastmatchingCard = cv2.resize(cv2.imread('CardsImages/001.jpg'), (widthCard, heightCard))# Set lastmatchingCard to a blank image to start; will be updated when a card is found
 
         while True:
             # Create a blank image
@@ -83,37 +87,47 @@ class PokemonCardScanner:
             edgedFrame = cv2.resize(edgedFrame, (widthCard, heightCard))
             contourFrame = cv2.resize(contourFrame, (widthCard, heightCard))
             bigContour = cv2.resize(bigContour, (widthCard, heightCard))
-            matchingCard = blackImg  # Set matchingCard
-            
-            # An array of all 8 images
+
+            # An array of all 7 images
             imageArr = ([rot90frame, grayFrame, blurredFrame, edgedFrame],
-                        [contourFrame, bigContour, imgWarpColored, matchingCard])
+                        [contourFrame, bigContour, imgWarpColored, lastmatchingCard])
 
             # Labels for each image
             labels = [["Original", "Gray", "Blurred", "Threshold"],
-                    ["Contours", "Biggest Contour", "Warped Perspective", "Matching Card"]]
+                    ["Contours", "Biggest Contour", "Warped Perspective", "Last Matching Card"]]
 
             # Stack all 8 images into one and add text labels
             stackedImage = utils.makeDisplayImage(imageArr, labels)
 
             # Display the image
             cv2.imshow("Card Finder", stackedImage)
-
+            
+            # If the warped image is not blank, we have found a card and can check if it's a card in our set
             if imgWarpColored is not blackImg:
                 # Check if a matching card has been found, and if so, display it
                 matchingCard = utils.findCard(imgWarpColored, self.cardsearchhashs)
                 if matchingCard is not None:
-                    #print("Matching card found!")
-                    #print(matchingCard)  # For testing: print the matching card info
-                    #matchingCard = cv2.resize(matchingCard, (widthCard, heightCard))
-                    self.collectedCards.update({matchingCard: +1})  # Add matching card to collected cards
+                    print("Matching card found!")
+                    print(matchingCard)  # For testing: print the matching card info
+                    lastmatchingCard = cv2.resize(cv2.imread('CardsImages/' + str(matchingCard).rjust(3, '0') + '.jpg'), (widthCard, heightCard))
+                    #add function to ensure that the same card isn't counted multiple times in a row here
+                    self.totalCardsCollected += 1
+                    self.collectedCards.update({matchingCard: self.collectedCards.get(matchingCard, 0) + 1})  # Add matching card to collected cards
                     print(self.collectedCards)
-                    #wait to see what to do with matching card
-                    time.sleep(5)
                     #add function to action matching card here
-                    break
+                    playsound.playsound(sound="Collect.wav")# Play sound when card is found
+                    #wait to see what to do with matching card
+                    time.sleep(1)
+                    #break
+            
             if cv2.waitKey(1) & 0xFF == ord('q'):  # If reading from video, quit if 'q' is pressed
                 print("Stopping card reader...")
+                #Print text file of collected cards
+                with open('collectedCards.txt', 'w') as f:
+                    f.write(f"Collected Cards: {time.ctime()}\n")
+                    f.write(f"Total Cards Collected: {sum(self.collectedCards.values())}\n")
+                    for card, count in sorted(self.collectedCards.items(), key=lambda x: int(x[0])):  # Sort cards by number
+                        f.write(f"{card}: {count}\n")
                 break
 
         # Stops cameras and closes display window
@@ -121,20 +135,21 @@ class PokemonCardScanner:
         cv2.destroyAllWindows()
     
     def generateCardSetHashes(self):
-        setSize = 1  # Number of cards in set (for future expansion)
-        for i in range(1, setSize + 1):
+        setSize = 25  # Number of cards in set (for future expansion)
+        for i in range(1, setSize +1):
             filename = 'CardsImages/' + str(i).rjust(3, '0') + '.jpg'
             cardhash = CardSet.CardSet.getHashes(imageName=filename,type='hash')
             cardhashmir = CardSet.CardSet.getHashes(imageName=filename,type='hashmir')
             cardhashud = CardSet.CardSet.getHashes(imageName=filename,type='hashud')
             cardhashudmir = CardSet.CardSet.getHashes(imageName=filename,type='hashudmir')
         
-        self.cardsearchhashs.update({str(i).rjust(3, '0'): {
-                'hash': cardhash,
-                'mir': cardhashmir,
-                'hud': cardhashud,
-                'hubmir': cardhashudmir
-            }})
+            #print("Card " + str(i) + " hashes generated.")  # For testing: print when each card's hashes are generated
+            self.cardsearchhashs.update({str(i).rjust(3, '0'): {
+                    'hash': cardhash,
+                    'mir': cardhashmir,
+                    'hud': cardhashud,
+                    'hubmir': cardhashudmir
+                }})
 
 if __name__ == '__main__':
     # Start reading cards

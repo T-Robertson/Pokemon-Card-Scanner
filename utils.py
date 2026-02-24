@@ -6,11 +6,11 @@ import imagehash
 
 # Get the width of the cards/images
 def getWidthCard():
-    return 340
+    return 350
 
 # Get the height of the cards/images
 def getHeightCard():
-    return 450
+    return 460
 
 # Returns the corners & area of the biggest contour
 def biggestContour(contours):
@@ -131,7 +131,7 @@ def findCard(imgWarpColor, wantedcards):
     hashes[3] = imagehash.dhash(scannedCard)
 
     # Compares this hash to a folder of hash values
-    cutoff = 18 # Arbitrarily set cutoff value; was found through testing
+    cutoff = 19 # Arbitrarily set cutoff value; was found through testing
    # Create arrays of size=4 that store hash differences for each orientation; every hashing method gets its own array
     avghashesDists = np.zeros(4)
     whashesDists = np.zeros(4)
@@ -168,7 +168,7 @@ def findCard(imgWarpColor, wantedcards):
         # This should make us look at the correct card orientation
         hashDistances = [min(avghashesDists), min(whashesDists), min(phashesDists), min(dhashesDists)]
         maxHashDists.append(max(hashDistances))  # Find of the max of each hashing method to reduce error
-    
+        
     #print(min(maxHashDists), cutoff)  # For testing: print the minimum hash distance found & the cutoff value
     if min(maxHashDists) < cutoff:  # If the smallest hash distance is less than the cutoff, we have found our card
         minCardNum = maxHashDists.index(min(maxHashDists)) + 1  # Find the card number of the card
