@@ -3,7 +3,7 @@ import imagehash
 from PIL import Image, ImageOps
 
 
-# Gets the average hash, whash, phash, & dhash for each card in the set in each orientation for a total of 16 hashes
+# Gets the average hash, whash, phash,dhash for each card in the set in each orientation for a total of 16 hashes
 # Four different hash methods are used to reduce potential for error in using only one hashing method
 class CardSet:
     def __init__(self):
@@ -12,7 +12,7 @@ class CardSet:
     # Gets hashes of cards in set
     def getHashes(imageName,type):
         # Create an array with self.setSize rows and 4 columns. Each column represents a different hashing method
-        arr = np.empty((1, 4), dtype=object)
+        arr = np.empty((1,4), dtype=object)
         img = Image.open(imageName)
         match type:
             # For each case, find the average hash, whash, phash, & dhash of the image & convert it to a string

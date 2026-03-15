@@ -1,8 +1,10 @@
+import os
 import cv2
 import numpy as np
 import math
 from PIL import Image
 import imagehash
+import CardSet
 
 # Get the width of the cards/images
 def getWidthCard():
@@ -131,7 +133,7 @@ def findCard(imgWarpColor, wantedcards):
     hashes[3] = imagehash.dhash(scannedCard)
 
     # Compares this hash to a folder of hash values
-    cutoff = 19 # Arbitrarily set cutoff value; was found through testing
+    cutoff = 18 # Arbitrarily set cutoff value; was found through testing
    # Create arrays of size=4 that store hash differences for each orientation; every hashing method gets its own array
     avghashesDists = np.zeros(4)
     whashesDists = np.zeros(4)
@@ -139,7 +141,6 @@ def findCard(imgWarpColor, wantedcards):
     dhashesDists = np.zeros(4)
     
     maxHashDists = []  # An array that will store the maximum of the minimum hash difference for each card
-    
     for x in wantedcards :  # Loop through recorded hashes
         #print(x)  # For testing: print the card number being compared
 
@@ -148,7 +149,7 @@ def findCard(imgWarpColor, wantedcards):
         avghashesDists[1] = hashes[0] - imagehash.hex_to_hash(wantedcards[x]['mir'][0][0])
         avghashesDists[2] = hashes[0] - imagehash.hex_to_hash(wantedcards[x]['hud'][0][0])
         avghashesDists[3] = hashes[0] - imagehash.hex_to_hash(wantedcards[x]['hubmir'][0][0])
-        
+
         whashesDists[0] = hashes[1] - imagehash.hex_to_hash(wantedcards[x]['hash'][0][1])
         whashesDists[1] = hashes[1] - imagehash.hex_to_hash(wantedcards[x]['mir'][0][1])
         whashesDists[2] = hashes[1] - imagehash.hex_to_hash(wantedcards[x]['hud'][0][1])
@@ -219,3 +220,56 @@ def makeDisplayImage(imgArr, labels):
                         (0, 0, 0), 2)
 
     return stacked
+
+def generateCardSetHashes():
+    setSize = len([f for f in os.listdir('CardsImages') if f.endswith('.jpg')])  # Number of cards in set (for future expansion)
+    print(f"Generating hashes for {setSize} cards in set...")  # For testing: print number of cards being hashed
+    cardsearchhashs = {}  # A dictionary that will store the hashes of each card in the set
+    for i in range(1, setSize +1):
+        filename = 'CardsImages/' + str(i).rjust(3, '0') + '.jpg'
+        cardhash = CardSet.CardSet.getHashes(imageName=filename,type='hash')
+        cardhashmir = CardSet.CardSet.getHashes(imageName=filename,type='hashmir')
+        cardhashud = CardSet.CardSet.getHashes(imageName=filename,type='hashud')
+        cardhashudmir = CardSet.CardSet.getHashes(imageName=filename,type='hashudmir')
+    
+        #print("Card " + str(i) + " hashes generated.")  # For testing: print when each card's hashes are generated
+        cardsearchhashs.update({str(i).rjust(3, '0'): {
+                'hash': cardhash,
+                'mir': cardhashmir,
+                'hud': cardhashud,
+                'hubmir': cardhashudmir
+            }})
+    #print(cardsearchhashs)
+    return cardsearchhashs
+
+def generateCardHashes(imageName):
+    cardsearchhashs = {}  # A dictionary that will store the hashes of card
+    filename = 'CardsImages/' + str(imageName).rjust(3, '0') + '.jpg'
+    cardhash = CardSet.CardSet.getHashes(imageName=filename,type='hash')
+    cardhashmir = CardSet.CardSet.getHashes(imageName=filename,type='hashmir')
+    cardhashud = CardSet.CardSet.getHashes(imageName=filename,type='hashud')
+    cardhashudmir = CardSet.CardSet.getHashes(imageName=filename,type='hashudmir')
+
+    cardsearchhashs.update({imageName: {
+            'hash': cardhash,
+            'mir': cardhashmir,
+            'hud': cardhashud,
+            'hubmir': cardhashudmir
+            }})
+    return cardsearchhashs
+
+def generateCardData():
+    setSize = len([f for f in os.listdir('CardsImages') if f.endswith('.jpg')])  # Number of cards in set (for future expansion)
+    cardData = {}  # A dictionary that will store the data of card
+    for i in range(1, setSize +1):
+        filename = 'CardsImages/' + str(i).rjust(3, '0') + '.jpg'
+        cardData.update({str(i).rjust(3, '0'): {
+            "Stock": 0,
+            "CardName":"",
+            "CardNumber": "",
+            "CardSet": "",
+            "CardType": "",
+            "Image": filename
+            }})
+    
+    return cardData

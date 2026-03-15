@@ -1,16 +1,22 @@
 import cv2
 import numpy as np
 import utils
-import CardSet
-from PIL import Image, ImageOps
 import time
 import playsound
+import json
 
 class PokemonCardScanner:
     def __init__(self):
-        # Initialize card set hashes dictionary
-        self.cardsearchhashs = {}
-        
+        # Initialize card data dictionary
+        try:
+            with open("Data.json", "r") as f:
+                self.cardData = json.load(f)  # Load card data from Data.json file
+        except FileNotFoundError:
+            print("Data.json not found. Creating a new one.")
+            self.cardData = utils.generateCardData()  # Generate card data dictionary if Data.json file doesn't exist
+        print("Card data loaded.")
+        # Generate card set hashes
+        self.cardsearchhashs = utils.generateCardSetHashes()  # Generate hashes for card set and store in cardsearchhashs dictionary
         # Cards collected
         self.collectedCards = {}
         self.totalCardsCollected = 0
@@ -19,9 +25,6 @@ class PokemonCardScanner:
         self.main()
         
     def main(self):
-        self.generateCardSetHashes() 
-        print("Card set hashes generated.")
-        #print(self.cardsearchhashs)  # For testing: print the generated card set hashes
         print("Starting card reader...")
         self.readCard()
         
@@ -88,9 +91,9 @@ class PokemonCardScanner:
             contourFrame = cv2.resize(contourFrame, (widthCard, heightCard))
             bigContour = cv2.resize(bigContour, (widthCard, heightCard))
 
-            # An array of all 7 images
+            # An array of all 8 images
             imageArr = ([rot90frame, grayFrame, blurredFrame, edgedFrame],
-                        [contourFrame, bigContour, imgWarpColored, lastmatchingCard])
+                        [contourFrame, bigContour, imgWarpColored,  lastmatchingCard])
 
             # Labels for each image
             labels = [["Original", "Gray", "Blurred", "Threshold"],
@@ -101,56 +104,38 @@ class PokemonCardScanner:
 
             # Display the image
             cv2.imshow("Card Finder", stackedImage)
-            
+
             # If the warped image is not blank, we have found a card and can check if it's a card in our set
             if imgWarpColored is not blackImg:
                 # Check if a matching card has been found, and if so, display it
                 matchingCard = utils.findCard(imgWarpColored, self.cardsearchhashs)
                 if matchingCard is not None:
-                    print("Matching card found!")
-                    print(matchingCard)  # For testing: print the matching card info
+                    print(f"Matching card found: {self.cardData[str(matchingCard).rjust(3, '0')]['CardName']}")
                     lastmatchingCard = cv2.resize(cv2.imread('CardsImages/' + str(matchingCard).rjust(3, '0') + '.jpg'), (widthCard, heightCard))
                     #add function to ensure that the same card isn't counted multiple times in a row here
-                    self.totalCardsCollected += 1
-                    self.collectedCards.update({matchingCard: self.collectedCards.get(matchingCard, 0) + 1})  # Add matching card to collected cards
-                    print(self.collectedCards)
+                    self.totalCardsCollected += 1  # Increment total cards collected
+                    self.collectedCards.update({self.cardData[str(matchingCard).rjust(3, '0')]['CardName']: self.collectedCards.get(self.cardData[str(matchingCard).rjust(3, '0')]['CardName'], 0) + 1})  # Add matching card to collected cards
+                    self.cardData[str(matchingCard).rjust(3, '0')]['CardName']
                     #add function to action matching card here
                     playsound.playsound(sound="Collect.wav")# Play sound when card is found
                     #wait to see what to do with matching card
-                    time.sleep(1)
-                    #break
-            
+                    time.sleep(3)  # Wait for 3 seconds before continuing to read cards
             if cv2.waitKey(1) & 0xFF == ord('q'):  # If reading from video, quit if 'q' is pressed
                 print("Stopping card reader...")
-                #Print text file of collected cards
-                with open('collectedCards.txt', 'w') as f:
-                    f.write(f"Collected Cards: {time.ctime()}\n")
-                    f.write(f"Total Cards Collected: {sum(self.collectedCards.values())}\n")
-                    for card, count in sorted(self.collectedCards.items(), key=lambda x: int(x[0])):  # Sort cards by number
-                        f.write(f"{card}: {count}\n")
+                with open("Data.json", "w") as f:
+                    json.dump(self.cardData, f, separators=(',', ': '), indent=4)  # Save card data to Data.json file
+                
+                with open("ScannedCards.txt", "w") as f:
+                    f.write(time.strftime("%Y-%m-%d %H:%M:%S") + "\n")  # Save date and time of scan to ScannedCards.txt file
+                    f.write("Total Cards Collected: " + str(self.totalCardsCollected) + "\n\n")
+                    f.write("Cards Collected:\n")
+                    for card, quantity in self.collectedCards.items():
+                        f.write(str(card).rjust(3, '0') + ": " + str(quantity) + "\n")  # Save collected cards and quantities to ScannedCards.txt file
                 break
-
         # Stops cameras and closes display window
         cam.release()
         cv2.destroyAllWindows()
     
-    def generateCardSetHashes(self):
-        setSize = 25  # Number of cards in set (for future expansion)
-        for i in range(1, setSize +1):
-            filename = 'CardsImages/' + str(i).rjust(3, '0') + '.jpg'
-            cardhash = CardSet.CardSet.getHashes(imageName=filename,type='hash')
-            cardhashmir = CardSet.CardSet.getHashes(imageName=filename,type='hashmir')
-            cardhashud = CardSet.CardSet.getHashes(imageName=filename,type='hashud')
-            cardhashudmir = CardSet.CardSet.getHashes(imageName=filename,type='hashudmir')
-        
-            #print("Card " + str(i) + " hashes generated.")  # For testing: print when each card's hashes are generated
-            self.cardsearchhashs.update({str(i).rjust(3, '0'): {
-                    'hash': cardhash,
-                    'mir': cardhashmir,
-                    'hud': cardhashud,
-                    'hubmir': cardhashudmir
-                }})
-
 if __name__ == '__main__':
     # Start reading cards
     PokemonCardScanner() # Finds and reads live feed

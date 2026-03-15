@@ -1,0 +1,191 @@
+{
+    "001": {
+        "CardName": "Team Rocket's Tarountula",
+        "CardNumber": "019/182",
+        "CardSet": "Destined Rivals",
+        "CardType": "Grass",
+        "Image": "CardsImages/001.jpg"
+    },
+    "002": {
+        "CardName": "Team Rocket's Archer",
+        "CardNumber": "170/182",
+        "CardSet": "Destined Rivals",
+        "CardType": "Trainer",
+        "Image": "CardsImages/002.jpg"
+    },
+    "003": {
+        "CardName": "Team Rocket's Factory",
+        "CardNumber": "173/182",
+        "CardSet": "Destined Rivals",
+        "CardType": "Trainer",
+        "Image": "CardsImages/003.jpg"
+    },
+    "004": {
+        "CardName": "Team Rocket's Ariana",
+        "CardNumber": "171/182",
+        "CardSet": "Destined Rivals",
+        "CardType": "Trainer",
+        "Image": "CardsImages/004.jpg"
+    },
+    "005": {
+        "CardName": "Team Rocket's Mimikyu",
+        "CardNumber": "087/182",
+        "CardSet": "Destined Rivals",
+        "CardType": "Psychic",
+        "Image": "CardsImages/005.jpg"
+    },
+    "006": {
+        "CardName": "Team Rocket's Proton",
+        "CardNumber": "177/182",
+        "CardSet": "Destined Rivals",
+        "CardType": "Trainer",
+        "Image": "CardsImages/006.jpg"
+    },
+    "007": {
+        "CardName": "Team Rocket's Giovanni",
+        "CardNumber": "174/182",
+        "CardSet": "Destined Rivals",
+        "CardType": "Trainer",
+        "Image": "CardsImages/007.jpg"
+    },
+    "008": {
+        "CardName": "Team Rocket's Transceiver",
+        "CardNumber": "178/182",
+        "CardSet": "Destined Rivals",
+        "CardType": "Trainer",
+        "Image": "CardsImages/008.jpg"
+    },
+    "009": {
+        "CardName": "Team Rocket's Energy",
+        "CardNumber": "182/182",
+        "CardSet": "Destined Rivals",
+        "CardType": "Energy",
+        "Image": "CardsImages/009.jpg"
+    },
+    "010": {
+        "CardName": "Team Rocket's Petrel",
+        "CardNumber": "176/182",
+        "CardSet": "Destined Rivals",
+        "CardType": "Trainer",
+        "Image": "CardsImages/010.jpg"
+    },
+    "011": {
+        "CardName": "Team Rocket's Spidops",
+        "CardNumber": "020/182",
+        "CardSet": "Destined Rivals",
+        "CardType": "Grass",
+        "Image": "CardsImages/011.jpg"
+    },
+    "012": {
+        "CardName": "Team Rocket's Articuno ",
+        "CardNumber": "051/182",
+        "CardSet": "Destined Rivals",
+        "CardType": "Water",
+        "Image": "CardsImages/012.jpg"
+    },
+    "013": {
+        "CardName": "Team Rocket's Great Ball",
+        "CardNumber": "175/182",
+        "CardSet": "Destined Rivals",
+        "CardType": "Trainer",
+        "Image": "CardsImages/013.jpg"
+    },
+    "014": {
+        "CardName": "Team Rocket's Bother-Bot",
+        "CardNumber": "172/182",
+        "CardSet": "Destined Rivals",
+        "CardType": "Trainer",
+        "Image": "CardsImages/014.jpg"
+    },
+    "015": {
+        "CardName": "Team Rocket's Zapdos",
+        "CardNumber": "072/182",
+        "CardSet": "Destined Rivals",
+        "CardType": "Electric",
+        "Image": "CardsImages/015.jpg"
+    },
+    "016": {
+        "CardName": "Team Rocket's Mewtwo ex",
+        "CardNumber": "081/182",
+        "CardSet": "Destined Rivals",
+        "CardType": "Psychic",
+        "Image": "CardsImages/016.jpg"
+    },
+    "017": {
+        "CardName": "Basic Grass Energy",
+        "CardNumber": "001",
+        "CardSet": "",
+        "CardType": "Energy",
+        "Image": "CardsImages/017.jpg"
+    },
+    "018": {
+        "CardName": "Basic Psychic Energy",
+        "CardNumber": "021",
+        "CardSet": "",
+        "CardType": "Energy",
+        "Image": "CardsImages/018.jpg"
+    },
+    "019": {
+        "CardName": "Energy Switch",
+        "CardNumber": "173/198",
+        "CardSet": "",
+        "CardType": "Trainer",
+        "Image": "CardsImages/019.jpg"
+    },
+    "020": {
+        "CardName": "Earthen Vessel",
+        "CardNumber": "163/182",
+        "CardSet": "",
+        "CardType": "Trainer",
+        "Image": "CardsImages/020.jpg"
+    },
+    "021": {
+        "CardName": "Switch",
+        "CardNumber": "194/198",
+        "CardSet": "",
+        "CardType": "Trainer",
+        "Image": "CardsImages/021.jpg"
+    },
+    "022": {
+        "CardName": "Night Stretcher",
+        "CardNumber": "061/064",
+        "CardSet": "",
+        "CardType": "Trainer",
+        "Image": "CardsImages/022.jpg"
+    },
+    "023": {
+        "CardName": "Maximum Belt",
+        "CardNumber": "157/137",
+        "CardSet": "",
+        "CardType": "Trainer",
+        "Image": "CardsImages/023.jpg"
+    },
+    "024": {
+        "CardName": "Ultra Ball",
+        "CardNumber": "196/198",
+        "CardSet": "",
+        "CardType": "Trainer",
+        "Image": "CardsImages/024.jpg"
+    },
+    "025": {
+        "CardName": "Counter Gain",
+        "CardNumber": "163/197",
+        "CardSet": "",
+        "CardType": "Trainer",
+        "Image": "CardsImages/025.jpg"
+    },
+    "026": {
+        "CardName": "Jumbo Ice Cream",
+        "CardNumber": "122/132",
+        "CardSet": "Mega Evolutions",
+        "CardType": "Trainer",
+        "Image": "CardsImages/026.jpg"
+    },
+    "027": {
+        "CardName": "Team Rocket's Chingling",
+        "CardNumber": "126/132",
+        "CardSet": "Mega Evolutions",
+        "CardType": "Trainer",
+        "Image": "CardsImages/027.jpg"
+    }
+}

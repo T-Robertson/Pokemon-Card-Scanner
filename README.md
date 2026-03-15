@@ -7,7 +7,7 @@ This repository contains Python code for a Pokémon card scanner and identifier 
 The computer's webcam is used to read the card.
 
 Using the `OpenCV` library, we can get a normalized scan (think PDF scanner apps) of the Pokémon card in the feed by doing the following:
- 1. Taking in a single image or video feed
+ 1. Taking in a video feed
  2. Finding edges in the image/frame
  3. Finding the biggest contour that is a rectangle
  4. Finding the corners of the biggest contour
